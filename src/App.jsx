@@ -17,10 +17,22 @@ const TASKS = [
 
 const App = () => {
   const [tasksData, updateTasks] = useState(TASKS);
+
   const toggleComplete = (taskId) => {
     const tasks = tasksData.map(task => {
       if (task.id === taskId) {
         return {...task, isComplete: !task.isComplete};
+      } else {
+        return task;
+      }
+    });
+    updateTasks(tasks);
+  };
+
+  const deleteTask = (taskId) => {
+    const tasks = tasksData.map(task => {
+      if (task.id === taskId) {
+        return {};
       } else {
         return task;
       }
@@ -34,7 +46,7 @@ const App = () => {
         <h1>Ada&apos;s Task List</h1>
       </header>
       <main>
-        <div>{<TaskList tasks={tasksData} onTaskToggleComplete={toggleComplete}/>}</div>
+        <div>{<TaskList tasks={tasksData} onTaskToggleComplete={toggleComplete} onTaskToggleDelete={deleteTask}/>}</div>
       </main>
     </div>
   );
