@@ -30,11 +30,11 @@ const App = () => {
   };
 
   const deleteTask = (taskId) => {
-    const tasks = tasksData.map(task => {
+    const tasks = tasksData.filter(task => {
       if (task.id === taskId) {
-        return {};
+        return false;
       } else {
-        return task;
+        return true;
       }
     });
     updateTasks(tasks);
