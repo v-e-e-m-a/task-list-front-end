@@ -25,15 +25,30 @@ const getAllTasksAPI = () => {
     .catch(error => console.log(error));
 };
 
+const getTaskAPI = (id) => {
+  return axios.get(`${kbaseURL}/task/${id}`)
+    .then(response => response.data)
+    .catch(error => console.log(error));
+};
+
 const convertFromAPI = (apiTask) => {
   const newTask = {
     ...apiTask,
+    isComplete: apiTask.is_complete ? apiTask.is_complete: false,
     description: apiTask.description ? apiTask.description : 'Unknown',
     goalId: apiTask.goal_id ? apiTask.goal_id : null,
   };
-
-
   return newTask;
+};
+
+const markTaskCompleteAPI = id => {
+  return axios.patch(`${kbaseURL}/tasks/${id}/mark_complete`)
+  .catch(error => console.log(error));
+};
+
+const markTaskIncompleteAPI = id => {
+  return axios.patch(`${kbaseURL}/tasks/${id}/mark_incomplete`)
+    .catch(error => console.log(error));
 };
 
 const App = () => {
@@ -51,16 +66,25 @@ const App = () => {
     getAllTasks();
   }, []);
 
-  const toggleComplete = (taskId) => {
-    const tasks = tasksData.map(task => {
-      if (task.id === taskId) {
-        return {...task, isComplete: !task.isComplete};
-      } else {
-        return task;
-      }
-    });
-    updateTasks(tasks);
+  const markTaskCompleted = (id) => {
+    const task = tasksData.find(task => task.id === id);
+    if (!task) return;
+
+    return (
+      task.isComplete
+        ? markTaskIncompleteAPI(id)
+        : markTaskCompleteAPI(id)
+    ).then(() => {
+      updateTasks(prevTasks =>
+        prevTasks.map(task =>
+          task.id === id
+            ? { ...task, isComplete: !task.isComplete }
+            : task
+        )
+      );
+    }).catch(error => console.log(error));
   };
+
 
   const deleteTask = (taskId) => {
     const tasks = tasksData.filter(task => {
@@ -80,7 +104,7 @@ const App = () => {
         <h1>Ada&apos;s Task List</h1>
       </header>
       <main>
-        <div>{<TaskList tasks={tasksData} onTaskToggleComplete={toggleComplete} onTaskToggleDelete={deleteTask}/>}</div>
+        <div>{<TaskList tasks={tasksData} onTaskToggleComplete={markTaskCompleted} onTaskToggleDelete={deleteTask}/>}</div>
       </main>
     </div>
   );
