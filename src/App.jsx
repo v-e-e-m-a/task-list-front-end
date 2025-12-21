@@ -1,6 +1,8 @@
 import TaskList from './components/TaskList.jsx';
 import { useState } from 'react';
 import './App.css';
+import axios from 'axios';
+import { useEffect } from 'react';
 
 const TASKS = [
   {
@@ -15,8 +17,39 @@ const TASKS = [
   },
 ];
 
+const kbaseURL = 'http://localhost:5000';
+
+const getAllTasksAPI = () => {
+  return axios.get(`${kbaseURL}/tasks`)
+    .then(response => response.data)
+    .catch(error => console.log(error));
+};
+
+const convertFromAPI = (apiTask) => {
+  const newTask = {
+    ...apiTask,
+    description: apiTask.description ? apiTask.description : 'Unknown',
+    goalId: apiTask.goal_id ? apiTask.goal_id : null,
+  };
+
+
+  return newTask;
+};
+
 const App = () => {
   const [tasksData, updateTasks] = useState(TASKS);
+
+  const getAllTasks = () => {
+    return getAllTasksAPI()
+      .then(tasks => {
+        const newTasks = tasks.map(convertFromAPI);
+        updateTasks(newTasks);
+      });
+  };
+
+  useEffect(() => {
+    getAllTasks();
+  }, []);
 
   const toggleComplete = (taskId) => {
     const tasks = tasksData.map(task => {
@@ -39,6 +72,7 @@ const App = () => {
     });
     updateTasks(tasks);
   };
+
 
   return (
     <div className="App">
