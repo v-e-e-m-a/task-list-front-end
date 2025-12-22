@@ -3,6 +3,7 @@ import { useState } from 'react';
 import './App.css';
 import axios from 'axios';
 import { useEffect } from 'react';
+import NewTaskForm from './components/NewTaskForm.jsx';
 
 const TASKS = [
   {
@@ -18,6 +19,13 @@ const TASKS = [
 ];
 
 const kbaseURL = 'http://localhost:5000';
+
+const addNewTaskAPI = (newTaskData) => {
+  return axios.post(`${kbaseURL}/tasks`, {
+    'title': newTaskData.title,
+    'description': ''
+  });
+};
 
 const getAllTasksAPI = () => {
   return axios.get(`${kbaseURL}/tasks`)
@@ -59,6 +67,13 @@ const deleteTaskAPI = id => {
 const App = () => {
   const [tasksData, updateTasks] = useState(TASKS);
 
+  const addTasks = (taskData) => {
+    return addNewTaskAPI(taskData)
+      .then(() => {
+        return getAllTasks();
+      });
+  };
+
   const getAllTasks = () => {
     return getAllTasksAPI()
       .then(tasks => {
@@ -92,9 +107,10 @@ const App = () => {
 
 
   const deleteTask = (taskId) => {
-    const task = tasksData.find(task => task.id === taskId);
-    return deleteTaskAPI(task.id)
-      .then(() => updateTasks(task))
+    return deleteTaskAPI(taskId)
+      .then(() => {
+        updateTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
+      })
       .catch(error => console.log(error));
   };
 
@@ -106,6 +122,7 @@ const App = () => {
       </header>
       <main>
         <div>{<TaskList tasks={tasksData} onTaskToggleComplete={markTaskCompleted} onTaskToggleDelete={deleteTask}/>}</div>
+        <NewTaskForm onAddTaskCallback={addTasks}></NewTaskForm>
       </main>
     </div>
   );
